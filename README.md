@@ -1,120 +1,108 @@
-# Oh My Desktop
+![SakuraDesktopIcons Screenshot](screenshots/ex1.png)
 
-Desktop icons manager for Hyprland. Hyprland has no built-in desktop support (as every twm), so this fills that gap.
+![SakuraDesktopIcons Settings](screenshots/ex2.png)
 
-Built with C++17 and Qt6 + LayerShellQt, it gives you a proper desktop with drag-and-drop, keyboard navigation, multi-monitor, and file watching.
+# SakuraDesktopIcons
 
-Part of the [Classic Hypr Suite](https://github.com/EduuG/classic-hypr-suite).
+A customizable desktop icons manager for **Hyprland**, built with C++17, Qt6, and LayerShellQt.
 
-<p>
-  <a href="https://github.com/EduuG/oh-my-desktop"><img src="https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&logoColor=white" alt="C++17"></a>
-  <a href="https://github.com/EduuG/oh-my-desktop"><img src="https://img.shields.io/badge/Qt-6-41CD52?logo=qt&logoColor=white" alt="Qt6"></a>
-  <a href="https://github.com/EduuG/oh-my-desktop"><img src="https://img.shields.io/badge/Wayland-LayerShell-8054B8?logo=linux&logoColor=white" alt="Wayland LayerShell"></a>
-  <a href="https://github.com/EduuG/oh-my-desktop"><img src="https://img.shields.io/badge/CMake-3.20+-064F8C?logo=cmake&logoColor=white" alt="CMake"></a>
-  <a href="https://github.com/EduuG/oh-my-desktop"><img src="https://img.shields.io/badge/Linux-x86__64-E95420?logo=linux&logoColor=white" alt="Linux"></a>
-</p>
-
-<a href="screenshot.png"><img src="screenshot.png" alt="Screenshot" width="800"></a>
-
-## Tech Stack
-
-- **Language:** C++17
-- **Framework:** Qt6 (QGraphicsScene-based icon management)
-- **Wayland:** LayerShellQt for layer-surface windows
-- **Compositor integration:** Hyprland IPC via socket2
-- **Build:** CMake 3.20+
-
-## Build
-
-```bash
-cd oh-my-desktop && rm -rf build && mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . -j$(nproc)
-```
-
-Requires Qt6 and LayerShellQt development packages.
-
-## Runtime deps
-
-`hyprctl`, `gio`, `xdg-mime`, `xdg-open`, plus any system terminal (duh)
-
-## Run
-
-Add to your Hyprland config:
-
-```ini
-exec-once = /full/path/to/oh-my-desktop/build/oh-my-desktop
-```
-
-Or if you copied the binary to `~/.local/bin/`:
-
-```ini
-exec-once = oh-my-desktop
-```
+SakuraDesktopIcons brings desktop icons to Hyprland with a redesigned settings interface, customizable themes, animations, and configurable context-menu actions.
 
 ## Features
 
-### Core
-- Grid layout with manual positioning and Ctrl+multi-select
-- Drag icons to move them — they snap to the nearest free cell
-- Ctrl+scroll to resize icons (24-96px range)
-- Image previews for common formats
-- `.desktop` files use `Name=` and `Icon=` from the entry
-- Pin applications to the desktop via the Properties dialog (Applications tab)
-- Positions and settings saved to `~/.config/Oh\ My\ Desktop/icon-positions.ini`
+- **Desktop Icons:** Drag-and-drop, manual positioning, multi-selection, keyboard navigation, and icon resizing.
+- **File Management:** Open, rename, delete, inspect properties, and move files to the Trash.
+- **Custom Actions:** Add configurable actions to desktop item context menus.
+- **Desktop Entries:** Create and edit application launchers, links, and directory entries.
+- **Themes:** Sakura, Noctalia, Normal Dark, Joyfull Sea, and Emerald Green.
+- **Custom Themes:** Load JSON theme files with persistent settings.
+- **Noctalia Integration:** Read supported colors from the generated `noctlia.lua` format without executing Lua.
+- **Animations:** Configurable visual effects with reduced-motion support.
+- **Sound Settings:** Configure sound events, preview custom audio files, and restore system defaults.
+- **Multi-Monitor Support:** Independent icon layouts and automatic monitor handling.
+- **System Tray:** Quick access to Settings, About, and Restart.
+- **Installer:** Interactive build, installation, and uninstallation.
 
-### File Management
-- Drag files onto the Recycle Bin or onto folders
-- (Almost) Smart text file opening
-- File watcher auto-refreshes when the Desktop folder changes
-- Recycle Bin accepts file drops and has "Empty Recycle Bin"
+## Installation
 
-### Keyboard
-- Arrows to navigate, Enter to open, Delete to trash
-- Type-to-select files by name
-- Full keyboard navigation without mouse
+### Dependencies
 
-### Context Menus
-- Right-click desktop: New (Folder/Document), Open in Terminal, Arrange, System actions (lock, suspend, etc.), Properties
-- Right-click icons: Open, Rename, Delete, Properties
-- Virtual icons: Recycle Bin, My Computer, My Documents (individually togglable)
+SakuraDesktopIcons requires C++17, CMake 3.20+, Qt6, and LayerShellQt.
 
-### Wayland Integration
-- Workspace switches clear menus and selection via Hyprland socket2
-- Each monitor gets its own LayerShellQt window at `LayerBackground`
+On EndeavourOS / Arch Linux:
 
-## How it works
+```bash
+sudo pacman -S --needed base-devel cmake git pkgconf \
+  qt6-base qt6-wayland layer-shell-qt
+```
 
-### LayerShellQt windows
+### Build and Install
 
-One desktop window per monitor, rendered as a background layer surface. This means it sits behind all other windows but stays visible — exactly what a desktop should be. When you plug in a new monitor, `screenAdded` fires and a new window is created automatically.
+Clone the repository and run the installer:
 
-### The QMenu problem on Wayland
+```bash
+git clone https://github.com/cherryCTL/SakuraDesktopIcon.git
+cd SakuraDesktopIcon
+chmod +x install.sh
+./install.sh
+```
 
-Standard `QMenu` popups don't work reliably on Wayland layer-shell surfaces. The compositor popup grab breaks and menus just don't appear. The workaround here is `InlineMenu`: context menus are implemented as child widgets (real `QWidget`s positioned under the cursor) instead of native popups. It's more code but it actually works pretty well.
+Choose the build and installation option from the interactive menu.
 
-### Hyprland IPC
+The executable is installed to:
 
-No Hyprland-specific dependencies or compile-time coupling. Everything is runtime: `hyprctl monitors -j` to get panel areas (so the desktop doesn't draw under the Waybar or others), and a raw socket2 connection for workspace/focus events. If Hyprland isn't running or the socket is unavailable, the desktop still functions — you just lose workspace-aware behaviors.
+```text
+~/.local/bin/SakuraDesktopIcons
+```
 
-### Grid layout
+To build manually:
 
-Qt doesn't have a built-in "desktop icon grid" that supports manual repositioning, rubber-band selection, and drag-to-rearrange all at once. The grid logic is custom — icons snap to cells, cells can be marked occupied, and the layout recalculates when icons are moved or resized.
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j"$(nproc)"
+```
 
-## Related Projects
+## Running on Hyprland
 
-- [HyprFrame](https://github.com/EduuG/classic-hypr-suite/tree/main/HyprFrame) — Hyprland plugin for customizable window title bars and borders
-- [show-desktop](https://github.com/EduuG/classic-hypr-suite/tree/main/show-desktop) — Bash scripts for "show desktop" via Waybar
+For a Hyprland configuration using Lua, add the following to your startup configuration:
 
-## Roadmap
+```lua
+hl.on("hyprland.start", function()
+    hl.exec_cmd("SakuraDesktopIcons")
+end)
+```
 
-Planned features, in no particular order:
+If the application does not start correctly during session initialization, try a short delay:
 
-- [ ] External drag-and-drop (drag files into other apps)
-- [ ] "Open with…" context menu entry
-- [ ] Built-in wallpaper manager
-- [ ] Desktop widgets (clock, weather, etc.)
-- [ ] Trash notifications with undo
-- [ ] Per-monitor files support
+```lua
+hl.exec_cmd("sleep 2 && SakuraDesktopIcons")
+```
 
-## Notes
-This project was built for personal use and is not actively maintained.
+You can also launch `SakuraDesktopIcons` manually after installation.
+
+## Configuration
+
+Settings are available through the desktop context menu or the system tray.
+
+- **Appearance:** Choose built-in or custom themes and configure icon appearance and animations.
+- **Custom Themes:** Select a JSON file using `Choose Custom Theme File...` and enable `Use custom theme instead`.
+- **Sounds:** Configure event sounds and preview custom audio files.
+- **Desktop Entries:** Create and edit `.desktop` launchers.
+
+See `custom-theme-doc.txt` and `examples/custom-theme.json` for the custom theme format.
+
+## Technical Details
+
+- **Language:** C++17
+- **UI:** Qt6
+- **Wayland:** LayerShellQt
+- **Build System:** CMake
+- **Compositor Integration:** Hyprland IPC using `hyprctl` and socket2
+
+The application uses background-layer surfaces for desktop windows and custom inline menus to avoid common popup issues with Wayland layer-shell surfaces.
+
+## License and Credits
+
+SakuraDesktopIcons is a personal project developed and maintained for Hyprland. AI assistance was used during development to help understand, debug, and improve the code.
+
+This project is based on [Oh My Desktop](https://github.com/EduuG/oh-my-desktop) by **EduuG**. Thanks to the original author for creating the foundation for this project.
